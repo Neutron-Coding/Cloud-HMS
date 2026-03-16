@@ -1,4 +1,4 @@
-# hospital-management-system
+# Cloud-HMS
 This is a basic project of Hospital Management System (HMS) a web application that allows Admins, Doctors, and Patients to interact with the system based on their roles.
 
 ## How to Run the Application
