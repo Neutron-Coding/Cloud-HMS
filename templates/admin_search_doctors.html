@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Search Doctors | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f5f9fc; font-family:Arial,sans-serif; }
+        .brand-bar { background:#28a745; color:#fff; padding:14px; text-align:center; font-weight:600; font-size:1.1rem; }
+        .wrap { max-width:1200px; margin:28px auto; padding:0 20px; }
+        .card { background:#fff; border-radius:8px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,.08); }
+        h1 { font-size:1.5rem; margin-bottom:16px; }
+        .btn-back { background:#6c757d; color:#fff; padding:6px 14px; border-radius:4px; text-decoration:none; font-size:.85rem; display:inline-block; margin-bottom:16px; }
+        .btn-back:hover { background:#5c636a; color:#fff; }
+        .search-box { background:#f8f9fa; padding:20px; border-radius:6px; margin-bottom:20px; }
+        .search-box form { display:flex; gap:10px; align-items:end; }
+        .search-box .form-group { flex:1; margin-bottom:0; }
+        .table { font-size:.9rem; }
+        .table th { background:#d4edda; color:#28a745; font-weight:600; }
+        .doctor-grid { display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); margin-top:20px; }
+        .doctor-card { padding:18px; background:#f8f9fa; border-radius:6px; border-left:4px solid #28a745; }
+        .doctor-card h3 { font-size:1.1rem; margin-bottom:8px; color:#28a745; }
+        .doctor-card p { font-size:.9rem; color:#666; margin-bottom:6px; }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="brand-bar">Search Doctors - Admin Panel</div>
+    <div class="wrap">
+        <div class="card">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn-back">&larr; Back to Dashboard</a>
+            <h1>Search Doctors</h1>
+
+            <div class="search-box">
+                <form method="get" action="{{ url_for('admin_search_doctors') }}">
+                    <div class="form-group">
+                        <label class="form-label">Search Query</label>
+                        <input type="text" name="q" class="form-control" placeholder="Enter name or specialization" value="{{ search_query or '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Search By</label>
+                        <select name="type" class="form-select">
+                            <option value="name" {% if search_type == 'name' %}selected{% endif %}>Doctor Name</option>
+                            <option value="specialization" {% if search_type == 'specialization' %}selected{% endif %}>Specialization</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-success" style="margin-top:8px;">Search</button>
+                    </div>
+                </form>
+            </div>
+
+            {% if search_query %}
+            <p class="text-muted">Found <strong>{{ doctors|length }}</strong> doctor(s) for "{{ search_query }}"</p>
+            {% endif %}
+
+            {% if doctors %}
+            <div class="doctor-grid">
+                {% for doctor in doctors %}
+                <div class="doctor-card">
+                    <h3>
+                        Dr. {{ doctor.full_name }}
+                        {% if doctor.flagged %}
+                        <span class="badge bg-danger ms-2">BLACKLISTED</span>
+                        {% endif %}
+                    </h3>
+                    <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                    <p><strong>Department:</strong> {{ doctor.department.name if doctor.department else 'N/A' }}</p>
+                    <p><strong>Email:</strong> {{ doctor.email }}</p>
+                    <p><strong>Phone:</strong> {{ doctor.phone or 'N/A' }}</p>
+                    <div class="mt-2">
+                        <a href="{{ url_for('admin_view_doctor', doctor_id=doctor.doctor_id) }}" class="btn btn-sm btn-info">View Details</a>
+                        <a href="{{ url_for('admin_doctor_appointments', doctor_id=doctor.doctor_id) }}" class="btn btn-sm btn-success">View Appointments</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted">No doctors found. Try a different search term.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# Cloud-HMS
+# hospital-management-system
 This is a basic project of Hospital Management System (HMS) a web application that allows Admins, Doctors, and Patients to interact with the system based on their roles.
 
 ## How to Run the Application
@@ -49,3 +49,4 @@ This is a basic project of Hospital Management System (HMS) a web application th
 - **Patient Panel:** Book appointments, view treatment history, edit profile
 - **Working Hours:** 10 AM - 5 PM (Weekdays only, weekends off)
 - **Blacklist System:** Admin can blacklist doctors and patients
+

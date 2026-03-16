@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Dashboard | HMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="brand-bar">Hospital Management System - Patient Panel</div>
+    <div class="wrap">
+        <div class="card">
+            <h1>Patient Dashboard</h1>
+            <p>Welcome, <strong>{{ patient.full_name }}</strong></p>
+
+            <div class="quick-links">
+                <a href="{{ url_for('patient_departments') }}">View Departments</a>
+                <a href="{{ url_for('patient_my_appointments') }}">My Appointments</a>
+                <a href="{{ url_for('patient_treatment_history') }}">Treatment History</a>
+                <a href="{{ url_for('patient_edit_profile') }}">Edit Profile</a>
+                <a class="secondary" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box stat-total">
+                    <h3>{{ total_appointments }}</h3>
+                    <p>Total Appointments</p>
+                </div>
+                <div class="stat-box stat-upcoming">
+                    <h3>{{ upcoming_count }}</h3>
+                    <p>Upcoming</p>
+                </div>
+                <div class="stat-box stat-completed">
+                    <h3>{{ completed_count }}</h3>
+                    <p>Completed</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Available Departments</h3>
+                {% if departments %}
+                <div class="dept-grid">
+                    {% for dept in departments %}
+                    <div class="dept-card">
+                        <h5>{{ dept.name }}</h5>
+                        <p class="mb-2 muted">{{ dept.description or 'N/A' }}</p>
+                        <a href="{{ url_for('patient_view_doctors', dept_id=dept.id) }}" class="btn btn-sm btn-info">View Doctors</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No departments available.</p>
+                {% endif %}
+            </div>
+
+            <div class="section">
+                <h3>Upcoming Appointments</h3>
+                {% if upcoming_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Doctor</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in upcoming_appointments %}
+                            <tr>
+                                <td>{{ apt.appointment_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ apt.appointment_time }}</td>
+                                <td>{{ apt.doctor.full_name if apt.doctor else 'N/A' }}</td>
+                                <td>{{ apt.doctor.department.name if apt.doctor and apt.doctor.department else 'N/A' }}</td>
+                                <td><span class="badge bg-primary">{{ apt.status }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('patient_view_appointment_details', appointment_id=apt.id) }}" class="btn btn-sm btn-info">View</a>
+                                    <a href="{{ url_for('patient_cancel_appointment', appointment_id=apt.id) }}" 
+                                    class="btn btn-sm btn-danger" 
+                                    onclick="return confirm('Cancel this appointment?')">Cancel</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No upcoming appointments.</p>
+                {% endif %}
+            </div>
+
+            <div class="section">
+                <h3>Recent Past Appointments</h3>
+                {% if past_appointments %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in past_appointments %}
+                            <tr>
+                                <td>{{ apt.appointment_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ apt.doctor.full_name if apt.doctor else 'N/A' }}</td>
+                                <td>
+                                    {% if apt.status == 'Completed' %}
+                                    <span class="badge bg-success">{{ apt.status }}</span>
+                                    {% elif apt.status == 'Cancelled' %}
+                                    <span class="badge bg-danger">{{ apt.status }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ apt.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('patient_view_appointment_details', appointment_id=apt.id) }}" class="btn btn-sm btn-info">View Details</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p><a href="{{ url_for('patient_my_appointments') }}">View all appointments &rarr;</a></p>
+                {% else %}
+                <p class="text-muted">No past appointments.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

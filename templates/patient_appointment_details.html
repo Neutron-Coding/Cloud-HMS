@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointment Details | Patient</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f5f9fc; font-family:Arial,sans-serif; }
+        .brand-bar { background:#17a2b8; color:#fff; padding:14px; text-align:center; font-weight:600; font-size:1.1rem; }
+        .wrap { max-width:900px; margin:28px auto; padding:0 20px; }
+        .card { background:#fff; border-radius:8px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,.08); margin-bottom:20px; }
+        h1 { font-size:1.5rem; margin-bottom:16px; }
+        .btn-back { background:#6c757d; color:#fff; padding:6px 14px; border-radius:4px; text-decoration:none; font-size:.85rem; display:inline-block; margin-bottom:16px; }
+        .btn-back:hover { background:#5c636a; color:#fff; }
+        .info-grid { display:grid; gap:12px; grid-template-columns:repeat(2,1fr); margin:20px 0; }
+        .info-item { background:#f8f9fa; padding:12px 16px; border-radius:6px; }
+        .info-item strong { color:#17a2b8; display:block; font-size:.85rem; margin-bottom:4px; }
+        .treatment-section { background:#e8f5e9; padding:16px; border-radius:6px; margin-top:20px; border-left:4px solid #198754; }
+        .treatment-section h3 { font-size:1.1rem; margin-bottom:12px; color:#198754; }
+        .treatment-section p { margin-bottom:8px; font-size:.9rem; }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="brand-bar">Appointment Details - Patient Panel</div>
+    <div class="wrap">
+        <div class="card">
+            <a href="{{ url_for('patient_my_appointments') }}" class="btn-back">&larr; Back to Appointments</a>
+            <h1>Appointment Details</h1>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Appointment Date</strong>
+                    <span>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Appointment Time</strong>
+                    <span>{{ appointment.appointment_time }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Doctor</strong>
+                    <span>Dr. {{ appointment.doctor.full_name if appointment.doctor else 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Specialization</strong>
+                    <span>{{ appointment.doctor.specialization if appointment.doctor else 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Department</strong>
+                    <span>{{ appointment.doctor.department.name if appointment.doctor and appointment.doctor.department else 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Status</strong>
+                    <span>
+                        {% if appointment.status == 'Booked' %}
+                        <span class="badge bg-primary">{{ appointment.status }}</span>
+                        {% elif appointment.status == 'Completed' %}
+                        <span class="badge bg-success">{{ appointment.status }}</span>
+                        {% elif appointment.status == 'Cancelled' %}
+                        <span class="badge bg-danger">{{ appointment.status }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ appointment.status }}</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item" style="grid-column:span 2;">
+                    <strong>Reason for Visit</strong>
+                    <span>{{ appointment.reason or 'N/A' }}</span>
+                </div>
+            </div>
+
+            {% if treatment %}
+            <div class="treatment-section">
+                <h3>Treatment Details</h3>
+                <p><strong>Diagnosis:</strong><br>{{ treatment.diagnosis or 'N/A' }}</p>
+                <p><strong>Prescription:</strong><br>{{ treatment.prescription or 'N/A' }}</p>
+                <p><strong>Additional Notes:</strong><br>{{ treatment.notes or 'N/A' }}</p>
+                <p class="text-muted mb-0" style="font-size:.85rem;">
+                    <strong>Recorded on:</strong> {{ treatment.created_at.strftime('%Y-%m-%d %H:%M') if treatment.created_at else 'N/A' }}
+                </p>
+            </div>
+            {% else %}
+            {% if appointment.status == 'Completed' %}
+            <div class="alert alert-info mt-3">Treatment details not yet recorded by the doctor.</div>
+            {% elif appointment.status == 'Booked' %}
+            <div class="alert alert-warning mt-3">Treatment details will be available after the appointment is completed.</div>
+            {% endif %}
+            {% endif %}
+
+            <div class="mt-3">
+                {% if appointment.status == 'Booked' %}
+                <a href="{{ url_for('patient_cancel_appointment', appointment_id=appointment.id) }}" 
+                class="btn btn-danger" 
+                onclick="return confirm('Cancel this appointment?')">Cancel Appointment</a>
+                {% endif %}
+                <a href="{{ url_for('patient_my_appointments') }}" class="btn btn-secondary">Back</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

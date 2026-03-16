@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Details | Doctor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f5f9fc; font-family:Arial,sans-serif; }
+        .brand-bar { background:#0d6efd; color:#fff; padding:14px; text-align:center; font-weight:600; font-size:1.1rem; }
+        .wrap { max-width:1100px; margin:28px auto; padding:0 20px; }
+        .card { background:#fff; border-radius:8px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,.08); margin-bottom:20px; }
+        h1 { font-size:1.5rem; margin-bottom:16px; }
+        .btn-back { background:#6c757d; color:#fff; padding:6px 14px; border-radius:4px; text-decoration:none; font-size:.85rem; display:inline-block; margin-bottom:16px; }
+        .btn-back:hover { background:#5c636a; color:#fff; }
+        .info-grid { display:grid; gap:12px; grid-template-columns:repeat(2,1fr); margin-bottom:24px; }
+        .info-item { background:#f8f9fa; padding:12px 16px; border-radius:6px; }
+        .info-item strong { color:#0d6efd; display:block; font-size:.85rem; margin-bottom:4px; }
+        .section { margin-top:24px; }
+        .section h3 { font-size:1.1rem; margin-bottom:12px; color:#0d6efd; }
+        .table { font-size:.9rem; }
+        .table th { background:#e7f5ff; color:#0d6efd; font-weight:600; }
+        .badge { font-size:.8rem; padding:4px 8px; }
+        .treatment-card { background:#f8f9fa; padding:16px; border-radius:6px; margin-bottom:12px; border-left:4px solid #0d6efd; }
+        .treatment-card h5 { font-size:1rem; margin-bottom:8px; color:#0d6efd; }
+        .treatment-card p { margin-bottom:6px; font-size:.9rem; }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="brand-bar">Patient Details - Doctor Panel</div>
+    <div class="wrap">
+        <div class="card">
+            <a href="{{ url_for('doctor_patients') }}" class="btn-back">&larr; Back to Patients</a>
+            <h1>Patient Details</h1>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Patient ID</strong>
+                    <span>{{ patient.id }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Full Name</strong>
+                    <span>{{ patient.full_name }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Email</strong>
+                    <span>{{ patient.email }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Phone</strong>
+                    <span>{{ patient.phone or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Date of Birth</strong>
+                    <span>{{ patient.date_of_birth.strftime('%Y-%m-%d') if patient.date_of_birth else 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Gender</strong>
+                    <span>{{ patient.gender or 'N/A' }}</span>
+                </div>
+                <div class="info-item">
+                    <strong>Blood Group</strong>
+                    <span>{{ patient.blood_group or 'N/A' }}</span>
+                </div>
+                <div class="info-item" style="grid-column:span 1;">
+                    <strong>Address</strong>
+                    <span>{{ patient.address or 'N/A' }}</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Appointment History</h3>
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apt in appointments %}
+                            <tr>
+                                <td>{{ apt.appointment_date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ apt.appointment_time }}</td>
+                                <td>{{ apt.reason or 'N/A' }}</td>
+                                <td>
+                                    {% if apt.status == 'Booked' %}
+                                    <span class="badge bg-primary">{{ apt.status }}</span>
+                                    {% elif apt.status == 'Completed' %}
+                                    <span class="badge bg-success">{{ apt.status }}</span>
+                                    {% elif apt.status == 'Cancelled' %}
+                                    <span class="badge bg-danger">{{ apt.status }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ apt.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if apt.status == 'Booked' %}
+                                    <a href="{{ url_for('doctor_add_treatment', appointment_id=apt.id) }}" class="btn btn-success btn-sm">Add Treatment</a>
+                                    {% elif apt.status == 'Completed' %}
+                                    <a href="{{ url_for('doctor_add_treatment', appointment_id=apt.id) }}" class="btn btn-warning btn-sm">View/Edit Treatment</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No appointments found with this patient.</p>
+                {% endif %}
+            </div>
+
+            <div class="section">
+                <h3>Treatment History</h3>
+                {% if treatments %}
+                {% for treatment in treatments %}
+                <div class="treatment-card">
+                    <h5>{{ treatment.appointment.appointment_date.strftime('%Y-%m-%d') if treatment.appointment else 'N/A' }}</h5>
+                    <p><strong>Diagnosis:</strong> {{ treatment.diagnosis or 'N/A' }}</p>
+                    <p><strong>Prescription:</strong> {{ treatment.prescription or 'N/A' }}</p>
+                    <p><strong>Notes:</strong> {{ treatment.notes or 'N/A' }}</p>
+                    <p class="text-muted mb-0" style="font-size:.8rem;">
+                        <strong>Recorded on:</strong> {{ treatment.created_at.strftime('%Y-%m-%d %H:%M') if treatment.created_at else 'N/A' }}
+                    </p>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted">No treatment records found for this patient.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

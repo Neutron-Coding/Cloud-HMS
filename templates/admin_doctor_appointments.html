@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Doctor Appointments | Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background:#f5f9fc; font-family:Arial,sans-serif; }
+        .brand-bar { background:#28a745; color:#fff; padding:14px; text-align:center; font-weight:600; font-size:1.1rem; }
+        .wrap { max-width:1200px; margin:28px auto; padding:0 20px; }
+        .card { background:#fff; border-radius:8px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,.08); }
+        h1 { font-size:1.5rem; margin-bottom:16px; }
+        .btn-back { background:#6c757d; color:#fff; padding:6px 14px; border-radius:4px; text-decoration:none; font-size:.85rem; display:inline-block; margin-bottom:16px; }
+        .btn-back:hover { background:#5c636a; color:#fff; }
+        .info-box { background:#d4edda; padding:16px; border-radius:6px; margin-bottom:20px; border-left:4px solid #28a745; }
+        .info-box p { margin-bottom:4px; font-size:.9rem; }
+        .stats-grid { display:grid; gap:14px; grid-template-columns:repeat(4,1fr); margin:20px 0; }
+        .stat-box { padding:16px; border-radius:6px; text-align:center; }
+        .stat-box h3 { margin:0; font-size:2rem; font-weight:700; }
+        .stat-box p { margin:6px 0 0; font-size:.85rem; color:#666; }
+        .stat-total { background:#e7f5ff; color:#0d6efd; }
+        .stat-booked { background:#fff3e0; color:#fd7e14; }
+        .stat-completed { background:#d4edda; color:#28a745; }
+        .stat-cancelled { background:#f8d7da; color:#dc3545; }
+        .table { font-size:.9rem; }
+        .table th { background:#d4edda; color:#28a745; font-weight:600; }
+        .badge { font-size:.8rem; padding:4px 8px; }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="brand-bar">Doctor Appointments - Admin Panel</div>
+    <div class="wrap">
+        <div class="card">
+            <a href="{{ url_for('admin_search_doctors') }}" class="btn-back">&larr; Back to Doctors</a>
+            <h1>Doctor's Appointments</h1>
+
+            <div class="info-box">
+                <p><strong>Doctor Name:</strong> Dr. {{ doctor.full_name }}</p>
+                <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                <p><strong>Department:</strong> {{ doctor.department.name if doctor.department else 'N/A' }}</p>
+                <p><strong>Email:</strong> {{ doctor.email }}</p>
+                <p><strong>Phone:</strong> {{ doctor.phone or 'N/A' }}</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-box stat-total">
+                    <h3>{{ total_count }}</h3>
+                    <p>Total Appointments</p>
+                </div>
+                <div class="stat-box stat-booked">
+                    <h3>{{ booked_count }}</h3>
+                    <p>Booked</p>
+                </div>
+                <div class="stat-box stat-completed">
+                    <h3>{{ completed_count }}</h3>
+                    <p>Completed</p>
+                </div>
+                <div class="stat-box stat-cancelled">
+                    <h3>{{ cancelled_count }}</h3>
+                    <p>Cancelled</p>
+                </div>
+            </div>
+
+            <h3>All Appointments</h3>
+            {% if appointments %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Patient Name</th>
+                            <th>Patient ID</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for apt in appointments %}
+                        <tr>
+                            <td>{{ apt.appointment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ apt.appointment_time }}</td>
+                            <td>{{ apt.patient.full_name if apt.patient else 'N/A' }}</td>
+                            <td>{{ apt.patient.id if apt.patient else 'N/A' }}</td>
+                            <td>{{ apt.patient.phone if apt.patient else 'N/A' }}</td>
+                            <td>
+                                {% if apt.status == 'Booked' %}
+                                <span class="badge bg-primary">{{ apt.status }}</span>
+                                {% elif apt.status == 'Completed' %}
+                                <span class="badge bg-success">{{ apt.status }}</span>
+                                {% elif apt.status == 'Cancelled' %}
+                                <span class="badge bg-danger">{{ apt.status }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ apt.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ apt.reason or 'N/A' }}</td>
+                            <td>
+                                {% if apt.patient %}
+                                <a href="{{ url_for('admin_patient_history', patient_id=apt.patient.id) }}" class="btn btn-sm btn-info">Patient History</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted">No appointments found for this doctor.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
