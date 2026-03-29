@@ -1,8 +1,9 @@
+import os
+from pathlib import Path
+
 from flask import Flask
 from flask_login import LoginManager
 from application.database import db
-
-import datetime
 
 STATIC_SECRET_KEY = 'hms-static-secret-key'
 DEFAULT_ADMIN_USERNAME = 'admin'
@@ -14,12 +15,27 @@ app = None
 login_Manager = LoginManager()
 
 
+def _resolve_database_uri() -> str:
+    """Pick DATABASE_URL when provided, otherwise use an app-local SQLite file.
+
+    On Vercel, the writable path is /tmp, so default there to avoid read-only errors.
+    """
+    db_url = os.getenv('DATABASE_URL')
+    if db_url:
+        return db_url
+
+    sqlite_dir = Path(os.getenv('SQLITE_DIR', '/tmp'))
+    sqlite_name = os.getenv('SQLITE_FILENAME', 'homs.db')
+    return f"sqlite:///{sqlite_dir / sqlite_name}"
+
+
 def create_app():
     app = Flask(__name__)
-    app.debug = True
+    app.debug = os.getenv('FLASK_DEBUG', '').lower() in {'1', 'true', 'yes'}
 
-    app.config['SECRET_KEY'] = STATIC_SECRET_KEY
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///homs.db'
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', STATIC_SECRET_KEY)
+    app.config['SQLALCHEMY_DATABASE_URI'] = _resolve_database_uri()
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
 
@@ -65,7 +81,7 @@ def create_app():
             ]
             db.session.add_all(starter_departments)
             db.session.commit()
-            
+
     @my_login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
@@ -80,4 +96,4 @@ app = create_app()
 from application.routes import *
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 3000)), debug=app.debug)
