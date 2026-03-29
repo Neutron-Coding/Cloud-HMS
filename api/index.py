@@ -6,8 +6,9 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from app import app as application  # noqa: E402
+from app import app as flask_app  # noqa: E402
 
 
-# Expose the pre-built Flask WSGI app
-app = application
+# Expose a plain WSGI callable that Vercel can detect reliably
+application = flask_app.wsgi_app
+app = flask_app
