@@ -26,6 +26,7 @@ def _resolve_database_uri() -> str:
 
     sqlite_dir = Path(os.getenv('SQLITE_DIR', '/tmp'))
     sqlite_name = os.getenv('SQLITE_FILENAME', 'homs.db')
+    sqlite_dir.mkdir(parents=True, exist_ok=True)
     return f"sqlite:///{sqlite_dir / sqlite_name}"
 
 
